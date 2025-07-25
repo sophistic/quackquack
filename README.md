@@ -125,7 +125,7 @@ The application includes AI-powered system prompt generation for agents using th
    - Model: `gpt-4`
    - Authentication: Bearer token
 
-2. **Google Gemini Pro**
+2. **Google Gemini 2.0 Flash**
    - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`
    - Authentication: API key parameter
 
