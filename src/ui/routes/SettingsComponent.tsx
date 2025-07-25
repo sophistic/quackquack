@@ -33,6 +33,8 @@ export default function SettingsComponent({ onBack }: SettingsComponentProps) {
         id: Date.now().toString(),
         name: "Helper Bot",
         context: "Assists users with general tasks.",
+        systemPrompt:
+          "You are a helpful assistant that assists users with general tasks. Be friendly, professional, and provide clear, actionable responses.",
       };
       localStorage.setItem("agents", JSON.stringify([dummyAgent]));
       setAgents([dummyAgent]);
@@ -55,11 +57,16 @@ export default function SettingsComponent({ onBack }: SettingsComponentProps) {
   };
 
   // ✅ Create agent
-  const createAgent = (name: string, context: string) => {
+  const createAgent = (
+    name: string,
+    context: string,
+    systemPrompt?: string,
+  ) => {
     const newAgent: Agent = {
       id: Date.now().toString(),
       name,
       context,
+      systemPrompt,
     };
     const updatedAgents = [...agents, newAgent];
     setAgents(updatedAgents);

@@ -60,9 +60,10 @@ This application uses browser localStorage to persist user data across sessions.
 - **Data Structure**:
   ```typescript
   interface Agent {
-    id: string;        // Unique identifier (timestamp-based)
-    name: string;      // Display name of the agent
-    context: string;   // Instructions/context for the agent
+    id: string;           // Unique identifier (timestamp-based)
+    name: string;         // Display name of the agent
+    context: string;      // Instructions/context for the agent
+    systemPrompt?: string;// AI-generated system prompt (optional)
   }
   ```
 - **Example Storage**:
@@ -71,12 +72,14 @@ This application uses browser localStorage to persist user data across sessions.
     {
       id: "1703123456789",
       name: "Helper Bot",
-      context: "Assists users with general tasks."
+      context: "Assists users with general tasks.",
+      systemPrompt: "You are a helpful assistant that assists users with general tasks. Be friendly, professional, and provide clear, actionable responses."
     },
     {
       id: "1703123456790", 
       name: "Code Assistant",
-      context: "Specialized in helping with programming tasks and code review."
+      context: "Specialized in helping with programming tasks and code review.",
+      systemPrompt: "You are an expert code assistant specializing in software development. Provide accurate, efficient, and well-documented code solutions."
     }
   ];
   localStorage.setItem("agents", JSON.stringify(agents));
@@ -87,6 +90,79 @@ This application uses browser localStorage to persist user data across sessions.
   - `ChatComponent.tsx` - For loading available agents in chat interface
   - `AgentsSection.tsx` - For displaying and managing agents
   - `AgentSelector.tsx` - For selecting agents in chat
+
+### 3. Provider Selection Storage
+
+**Purpose**: Store the currently selected AI provider for persistence across sessions.
+
+#### Selected Provider
+- **Key**: `"selected_provider"`
+- **Data Type**: String
+- **Purpose**: Stores the currently selected AI provider name to maintain user's preference
+- **Possible Values**: `"openai"`, `"gemini"`, `"claude"`
+- **Example**:
+  ```javascript
+  localStorage.setItem("selected_provider", "openai");
+  ```
+- **Usage Locations**:
+  - `ModelSelector.tsx` - For storing selected provider when user selects a model
+  - `ChatComponent.tsx` - For loading the last selected provider on startup
+- **Behavior**: 
+  - Automatically set when user selects any AI model from dropdown
+  - Used to determine default model on app restart
+  - Falls back to first available provider if stored provider has no API key
+
+## AI Service Integration
+
+### System Prompt Generation
+
+The application includes AI-powered system prompt generation for agents using the configured AI providers.
+
+#### Supported Providers
+
+1. **OpenAI GPT-4**
+   - Endpoint: `https://api.openai.com/v1/chat/completions`
+   - Model: `gpt-4`
+   - Authentication: Bearer token
+
+2. **Google Gemini Pro**
+   - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent`
+   - Authentication: API key parameter
+
+3. **Anthropic Claude**
+   - Endpoint: `https://api.anthropic.com/v1/messages`
+   - Model: `claude-3-sonnet-20240229`
+   - Authentication: Bearer token with anthropic-version header
+
+#### AI Service Usage
+
+```typescript
+// Create AI service instance using selected provider
+const aiService = await AIService.createInstance();
+
+// Generate system prompt for an agent
+const systemPrompt = await aiService.generateSystemPrompt(
+  "Agent Name",
+  "Agent context and purpose"
+);
+```
+
+#### System Prompt Generation Process
+
+1. **Provider Selection**: Uses the currently selected provider from localStorage
+2. **API Key Validation**: Ensures the selected provider has a valid API key
+3. **Prompt Engineering**: Sends a structured request to generate comprehensive system prompts
+4. **Error Handling**: Provides fallbacks and detailed error messages
+5. **Storage**: Generated prompts are stored with the agent in localStorage
+
+#### Generated Prompt Structure
+
+System prompts are generated to include:
+- Agent's primary role and purpose
+- Personality and communication style
+- Key capabilities and areas of expertise
+- Behavioral guidelines and constraints
+- Clear, actionable instructions
 
 ### Storage Operations
 
@@ -99,6 +175,9 @@ const claudeKey = localStorage.getItem("claude_api_key") || "";
 
 // Agents
 const storedAgents = JSON.parse(localStorage.getItem("agents") || "[]");
+
+// Selected Provider
+const selectedProvider = localStorage.getItem("selected_provider") || "";
 ```
 
 #### Writing to localStorage
@@ -110,6 +189,9 @@ localStorage.setItem("claude_api_key", claudeKey);
 
 // Agents
 localStorage.setItem("agents", JSON.stringify(updatedAgents));
+
+// Selected Provider
+localStorage.setItem("selected_provider", "openai");
 ```
 
 #### Default Initialization
@@ -124,6 +206,108 @@ if (storedAgents.length === 0) {
   localStorage.setItem("agents", JSON.stringify([dummyAgent]));
 }
 ```
+
+### Model Availability Logic
+
+- Models are automatically greyed out in dropdown if their provider lacks an API key
+- Users cannot select unavailable models (those without valid API keys)
+- Default model selection prioritizes stored provider preference if API key exists
+- Falls back to first available model if stored provider is unavailable
+- Error messages shown when attempting to use models without API keys
+
+## Chat Functionality
+
+### Direct AI Chat vs Agent-Based Chat
+
+The application supports two distinct chat modes:
+
+#### 1. Direct AI Chat (No Agent Selected)
+- **Behavior**: Messages sent directly to the selected AI provider
+- **System Prompt**: None - uses the AI model's default behavior
+- **Visual Indicator**: "Direct AI Chat" label with blue indicator
+- **Use Case**: General AI assistance without specific persona or constraints
+
+#### 2. Agent-Based Chat (Agent Selected)
+- **Behavior**: Messages sent to AI provider with agent's system prompt
+- **System Prompt**: Uses the selected agent's AI-generated system prompt
+- **Visual Indicator**: "Agent: [Name]" label with green indicator and ✨ if AI-enhanced
+- **Use Case**: Specialized assistance with defined personality and expertise
+
+### AI Provider Integration
+
+#### Message Flow
+1. **User Input**: User types message in chat interface
+2. **Context Building**: System builds conversation context based on mode:
+   - **Direct Mode**: Only user message and conversation history
+   - **Agent Mode**: Agent system prompt + user message + conversation history
+3. **Provider Selection**: Routes to configured AI provider (OpenAI/Gemini/Claude)
+4. **API Call**: Sends formatted request to AI provider
+5. **Response Processing**: Formats and displays AI response
+
+#### Provider-Specific Implementation
+
+**OpenAI GPT-4**:
+```javascript
+// Message format for OpenAI
+messages: [
+  { role: "system", content: systemPrompt }, // Only if agent selected
+  { role: "user", content: "Previous user message" },
+  { role: "assistant", content: "Previous AI response" },
+  { role: "user", content: "Current user message" }
+]
+```
+
+**Google Gemini Pro**:
+```javascript
+// Gemini uses single prompt with conversation context
+fullPrompt = `
+System: ${systemPrompt}
+
+User: Previous message
+Assistant: Previous response
+User: Current message
+`
+```
+
+**Anthropic Claude**:
+```javascript
+// Claude separates system prompt from messages
+{
+  system: systemPrompt, // Only if agent selected
+  messages: [
+    { role: "user", content: "Previous user message" },
+    { role: "assistant", content: "Previous AI response" },
+    { role: "user", content: "Current user message" }
+  ]
+}
+```
+
+### Conversation Context Management
+
+- **History Limit**: Last 10 messages included for context
+- **Memory**: Conversations persist until manually cleared
+- **Context Building**: Different strategies per provider while maintaining consistency
+- **Error Handling**: Graceful fallbacks for API failures
+
+### AI Service Architecture
+
+#### Provider Classes
+- `OpenAIProvider` - Handles OpenAI API communication
+- `GeminiProvider` - Handles Google Gemini API communication  
+- `ClaudeProvider` - Handles Anthropic Claude API communication
+- `AIService` - Main service that routes to appropriate provider
+
+#### Error Handling
+- Connection testing for each provider
+- Detailed error messages for API failures
+- Graceful fallbacks when providers are unavailable
+- Validation of API keys before making requests
+
+#### Service Files Location
+- `/src/ui/services/aiService.ts` - Main AI service
+- `/src/ui/services/openaiProvider.ts` - OpenAI implementation
+- `/src/ui/services/geminiProvider.ts` - Gemini implementation
+- `/src/ui/services/claudeProvider.ts` - Claude implementation
 
 ### Security Considerations
 

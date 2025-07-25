@@ -4,10 +4,7 @@ interface LoginScreenProps {
 
 function LoginScreen({ onLogin }: LoginScreenProps) {
   return (
-    <div
-      className="w-full flex flex-col items-center"
-      style={{ WebkitAppRegion: "no-drag" }}
-    >
+    <div className=" no-drag w-full flex flex-col items-center">
       <h2 className="text-2xl font-semibold mb-4 text-white">Welcome Back</h2>
 
       <input

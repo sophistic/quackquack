@@ -1,4 +1,4 @@
-import { Bot, Plus } from "lucide-react";
+import { Bot, Plus, Sparkles } from "lucide-react";
 import type { Agent } from "./types";
 import AgentItem from "./AgentItem";
 
@@ -18,6 +18,10 @@ export default function AgentsSection({
       <div className="flex items-center justify-between">
         <h3 className="text-white/80 text-sm font-semibold flex items-center gap-1">
           <Bot size={14} /> Agents
+          <span className="text-xs text-white/40">
+            ({agents.filter((agent) => agent.systemPrompt).length}/
+            {agents.length} with AI prompts)
+          </span>
         </h3>
         <button
           onClick={onAddAgent}
@@ -32,7 +36,14 @@ export default function AgentsSection({
       ) : (
         <div className="space-y-2">
           {agents.map((agent) => (
-            <AgentItem key={agent.id} agent={agent} onDelete={onDeleteAgent} />
+            <div key={agent.id} className="relative">
+              <AgentItem agent={agent} onDelete={onDeleteAgent} />
+              {agent.systemPrompt && (
+                <div className="absolute top-2 right-8">
+                  <Sparkles size={12} className="text-green-400" />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

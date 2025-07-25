@@ -6,6 +6,7 @@ export interface Agent {
   id: string;
   name: string;
   context: string;
+  systemPrompt?: string;
 }
 
 export type SaveStatus = "idle" | "saving" | "saved";

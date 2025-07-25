@@ -39,9 +39,20 @@ export default function ChatHeader({
         >
           <ArrowLeft size={18} />
         </button>
-        <h2 className="drag text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-          Quack Chat
-        </h2>
+        <div className="drag">
+          <h2 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            Quack Chat
+          </h2>
+          {selectedAgent ? (
+            <p className="text-xs text-green-400 mt-0.5">
+              Agent: {agents.find((a) => a.id === selectedAgent)?.name}
+              {agents.find((a) => a.id === selectedAgent)?.systemPrompt &&
+                " ✨"}
+            </p>
+          ) : (
+            <p className="text-xs text-white/60 mt-0.5">Direct AI Chat</p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

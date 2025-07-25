@@ -25,14 +25,29 @@ export default function AgentSelector({
     <div className="relative">
       <button
         onClick={onToggleDropdown}
-        className="no-drag backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg text-white text-xs transition-all duration-200 flex items-center gap-1"
+        className={`no-drag backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs transition-all duration-200 flex items-center gap-1 ${
+          selectedAgent
+            ? "bg-green-500/20 hover:bg-green-500/30 border border-green-400/30 text-green-100"
+            : "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
+        }`}
       >
         <Bot size={14} />
-        <span className="truncate max-w-[80px]">
-          {selectedAgent
-            ? agents.find((a) => a.id === selectedAgent)?.name
-            : "No Agent"}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="truncate max-w-[80px]">
+            {selectedAgent
+              ? agents.find((a) => a.id === selectedAgent)?.name
+              : "No Agent"}
+          </span>
+          {selectedAgent &&
+            agents.find((a) => a.id === selectedAgent)?.systemPrompt && (
+              <span
+                className="text-yellow-400"
+                title="Has AI-generated system prompt"
+              >
+                ✨
+              </span>
+            )}
+        </div>
         <ChevronDown size={14} />
       </button>
 
@@ -46,17 +61,29 @@ export default function AgentSelector({
             <>
               <button
                 onClick={() => handleSelectAgent(null)}
-                className="w-full text-left px-3 py-2 text-white/60 hover:bg-white/10 text-xs"
+                className="w-full text-left px-3 py-2 text-white/60 hover:bg-white/10 text-xs flex items-center justify-between"
               >
-                No Agent
+                <span>No Agent</span>
+                <span className="text-white/40 text-[10px]">Direct AI</span>
               </button>
               {agents.map((agent) => (
                 <button
                   key={agent.id}
                   onClick={() => handleSelectAgent(agent.id)}
-                  className="w-full text-left px-3 py-2 text-white text-xs hover:bg-white/10 first:rounded-t-lg last:rounded-b-lg transition-all duration-150"
+                  className="w-full text-left px-3 py-2 text-white text-xs hover:bg-white/10 first:rounded-t-lg last:rounded-b-lg transition-all duration-150 flex items-center justify-between"
                 >
-                  {agent.name}
+                  <span>{agent.name}</span>
+                  <div className="flex items-center gap-1">
+                    {agent.systemPrompt && (
+                      <span
+                        className="text-yellow-400"
+                        title="Has AI-generated system prompt"
+                      >
+                        ✨
+                      </span>
+                    )}
+                    <span className="text-white/40 text-[10px]">Agent</span>
+                  </div>
                 </button>
               ))}
             </>
