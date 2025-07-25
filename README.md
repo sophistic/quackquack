@@ -215,7 +215,7 @@ if (storedAgents.length === 0) {
 - Falls back to first available model if stored provider is unavailable
 - Error messages shown when attempting to use models without API keys
 
-## Chat Functionality
+### Chat Functionality
 
 ### Direct AI Chat vs Agent-Based Chat
 
@@ -232,6 +232,14 @@ The application supports two distinct chat modes:
 - **System Prompt**: Uses the selected agent's AI-generated system prompt
 - **Visual Indicator**: "Agent: [Name]" label with green indicator and ✨ if AI-enhanced
 - **Use Case**: Specialized assistance with defined personality and expertise
+
+### Conversation Management
+
+#### Automatic Conversation Clearing
+- **Agent Switching**: Conversation history is automatically cleared when switching between agents
+- **Mode Switching**: History is cleared when switching between "No Agent" and any agent
+- **Visual Feedback**: Temporary notification shows when conversation is cleared due to agent change
+- **Rationale**: Each agent has different system prompts and contexts, so mixing conversations would be confusing
 
 ### AI Provider Integration
 
@@ -288,8 +296,9 @@ User: Current message`
 
 ### Conversation Context Management
 
-- **History Limit**: Last 10 messages included for context
-- **Memory**: Conversations persist until manually cleared
+- **History Limit**: Last 10 messages included for context within the same agent session
+- **Memory**: Conversations persist until manually cleared OR agent is changed
+- **Auto-Clear**: Conversation automatically clears when switching agents or modes
 - **Context Building**: Different strategies per provider while maintaining consistency
 - **Error Handling**: Graceful fallbacks for API failures
 
@@ -313,10 +322,14 @@ User: Current message`
 - Validation of API keys before making requests
 
 #### Service Files Location
-- `/src/ui/services/aiService.ts` - Main AI service
-- `/src/ui/services/openaiProvider.ts` - OpenAI implementation
-- `/src/ui/services/geminiProvider.ts` - Gemini implementation
-- `/src/ui/services/claudeProvider.ts` - Claude implementation
+- `/src/ui/services/aiService.ts` - Main AI service for system prompt generation
+- `/src/ui/services/openaiProvider.ts` - OpenAI system prompt generation
+- `/src/ui/services/geminiProvider.ts` - Gemini system prompt generation
+- `/src/ui/services/claudeProvider.ts` - Claude system prompt generation
+- `/src/ui/services/chatProviders/chatService.ts` - Main chat service for conversations
+- `/src/ui/services/chatProviders/openaiChatProvider.ts` - OpenAI chat conversations
+- `/src/ui/services/chatProviders/geminiChatProvider.ts` - Gemini chat conversations
+- `/src/ui/services/chatProviders/claudeChatProvider.ts` - Claude chat conversations
 
 ### Security Considerations
 

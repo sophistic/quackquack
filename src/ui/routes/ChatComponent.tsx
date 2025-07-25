@@ -274,6 +274,35 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
     }
   };
 
+  const handleAgentSelect = (agentId: string | null) => {
+    // Clear conversation history when switching agents
+    setMessages([]);
+
+    // Add a notification message about the conversation being cleared
+    if (messages.length > 0) {
+      const clearNotification: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: agentId
+          ? `🔄 Switched to agent "${agents.find((a) => a.id === agentId)?.name}". Previous conversation cleared.`
+          : "🔄 Switched to direct AI chat. Previous conversation cleared.",
+        timestamp: new Date(),
+      };
+
+      setTimeout(() => {
+        setMessages([clearNotification]);
+        // Remove the notification after 3 seconds
+        setTimeout(() => {
+          setMessages((prev) =>
+            prev.filter((msg) => msg.id !== clearNotification.id),
+          );
+        }, 3000);
+      }, 100);
+    }
+
+    setSelectedAgent(agentId);
+  };
+
   const handleToggleAgentsDropdown = () => {
     setShowAgentsDropdown(!showAgentsDropdown);
     if (showModelDropdown) setShowModelDropdown(false);
@@ -295,7 +324,7 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         selectedAgent={selectedAgent}
         showAgentsDropdown={showAgentsDropdown}
         onToggleAgentsDropdown={handleToggleAgentsDropdown}
-        onSelectAgent={setSelectedAgent}
+        onSelectAgent={handleAgentSelect}
         onClearConversation={clearConversation}
       />
 

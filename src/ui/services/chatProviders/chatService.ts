@@ -12,7 +12,10 @@ export interface ChatServiceConfig {
 
 export class ChatService {
   private provider: ChatProvider;
-  private providerInstance: OpenAIChatProvider | GeminiChatProvider | ClaudeChatProvider;
+  private providerInstance:
+    | OpenAIChatProvider
+    | GeminiChatProvider
+    | ClaudeChatProvider;
 
   constructor(config: ChatServiceConfig) {
     this.provider = config.provider;
@@ -23,7 +26,7 @@ export class ChatService {
    * Creates the appropriate provider instance based on the selected provider
    */
   private createProviderInstance(
-    apiKey: string
+    apiKey: string,
   ): OpenAIChatProvider | GeminiChatProvider | ClaudeChatProvider {
     switch (this.provider) {
       case "openai":
@@ -47,7 +50,7 @@ export class ChatService {
   async sendMessage(
     userInput: string,
     systemPrompt?: string,
-    previousMessages: Message[] = []
+    previousMessages: Message[] = [],
   ): Promise<string> {
     if (!userInput.trim()) {
       throw new Error("User input cannot be empty");
@@ -57,7 +60,7 @@ export class ChatService {
       return await this.providerInstance.sendMessage(
         userInput,
         systemPrompt,
-        previousMessages
+        previousMessages,
       );
     } catch (error) {
       const providerName = this.getProviderDisplayName();
@@ -126,7 +129,9 @@ export class ChatService {
    * Gets the selected provider from localStorage, with fallback logic
    */
   static getSelectedProvider(): ChatProvider | null {
-    const selectedProvider = localStorage.getItem("selected_provider") as ChatProvider;
+    const selectedProvider = localStorage.getItem(
+      "selected_provider",
+    ) as ChatProvider;
     const availableProviders = ChatService.getAvailableProviders();
 
     // Check if the selected provider is available
@@ -181,8 +186,8 @@ export class ChatService {
       },
       {
         provider: "gemini",
-        displayName: "Google Gemini 1.5 Pro",
-        modelName: "gemini-1.5-pro",
+        displayName: "Google Gemini 2.0 Flash",
+        modelName: "gemini-2.0-flash",
         available: availableProviders.includes("gemini"),
       },
       {
@@ -213,7 +218,10 @@ export class ChatService {
     }
 
     const selectedProvider = localStorage.getItem("selected_provider");
-    if (selectedProvider && !availableProviders.includes(selectedProvider as ChatProvider)) {
+    if (
+      selectedProvider &&
+      !availableProviders.includes(selectedProvider as ChatProvider)
+    ) {
       return `${selectedProvider.toUpperCase()} API key is missing. Please add it in Settings or select a different provider.`;
     }
 

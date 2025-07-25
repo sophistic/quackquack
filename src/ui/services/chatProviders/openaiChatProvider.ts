@@ -8,7 +8,7 @@ export interface OpenAIConfig {
 }
 
 export class OpenAIChatProvider {
-  private static readonly DEFAULT_CONFIG: Omit<OpenAIConfig, 'apiKey'> = {
+  private static readonly DEFAULT_CONFIG: Omit<OpenAIConfig, "apiKey"> = {
     model: "gpt-4-turbo-preview", // Latest GPT-4 Turbo model
     maxTokens: 1000,
     temperature: 0.7,
@@ -19,7 +19,10 @@ export class OpenAIChatProvider {
 
   private config: OpenAIConfig;
 
-  constructor(apiKey: string, customConfig?: Partial<Omit<OpenAIConfig, 'apiKey'>>) {
+  constructor(
+    apiKey: string,
+    customConfig?: Partial<Omit<OpenAIConfig, "apiKey">>,
+  ) {
     this.config = {
       apiKey,
       ...OpenAIChatProvider.DEFAULT_CONFIG,
@@ -37,9 +40,13 @@ export class OpenAIChatProvider {
   async sendMessage(
     userInput: string,
     systemPrompt?: string,
-    previousMessages: Message[] = []
+    previousMessages: Message[] = [],
   ): Promise<string> {
-    const messages = this.buildMessageArray(userInput, systemPrompt, previousMessages);
+    const messages = this.buildMessageArray(
+      userInput,
+      systemPrompt,
+      previousMessages,
+    );
 
     try {
       const response = await this.makeApiCall(messages);
@@ -47,8 +54,14 @@ export class OpenAIChatProvider {
     } catch (error) {
       // Try fallback model if primary model fails
       if (this.config.model !== OpenAIChatProvider.FALLBACK_MODEL) {
-        console.warn(`OpenAI ${this.config.model} failed, trying fallback model`);
-        return this.sendMessageWithFallback(userInput, systemPrompt, previousMessages);
+        console.warn(
+          `OpenAI ${this.config.model} failed, trying fallback model`,
+        );
+        return this.sendMessageWithFallback(
+          userInput,
+          systemPrompt,
+          previousMessages,
+        );
       }
       throw error;
     }
@@ -60,7 +73,7 @@ export class OpenAIChatProvider {
   private buildMessageArray(
     userInput: string,
     systemPrompt?: string,
-    previousMessages: Message[] = []
+    previousMessages: Message[] = [],
   ): Array<{ role: string; content: string }> {
     const messages: Array<{ role: string; content: string }> = [];
 
@@ -94,22 +107,25 @@ export class OpenAIChatProvider {
    * Makes the actual API call to OpenAI
    */
   private async makeApiCall(
-    messages: Array<{ role: string; content: string }>
+    messages: Array<{ role: string; content: string }>,
   ): Promise<any> {
-    const response = await fetch(`${OpenAIChatProvider.BASE_URL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${this.config.apiKey}`,
+    const response = await fetch(
+      `${OpenAIChatProvider.BASE_URL}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.model,
+          messages: messages,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          stream: false, // We don't support streaming yet
+        }),
       },
-      body: JSON.stringify({
-        model: this.config.model,
-        messages: messages,
-        max_tokens: this.config.maxTokens,
-        temperature: this.config.temperature,
-        stream: false, // We don't support streaming yet
-      }),
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -117,7 +133,7 @@ export class OpenAIChatProvider {
       const errorCode = errorData.error?.code || response.status;
 
       throw new Error(
-        `OpenAI API error (${this.config.model}): ${errorCode} - ${errorMessage}`
+        `OpenAI API error (${this.config.model}): ${errorCode} - ${errorMessage}`,
       );
     }
 
@@ -130,8 +146,10 @@ export class OpenAIChatProvider {
   private extractResponseContent(data: any): string {
     const content = data.choices?.[0]?.message?.content;
 
-    if (!content || typeof content !== 'string') {
-      throw new Error(`Invalid response from OpenAI ${this.config.model}: No content generated`);
+    if (!content || typeof content !== "string") {
+      throw new Error(
+        `Invalid response from OpenAI ${this.config.model}: No content generated`,
+      );
     }
 
     return content.trim();
@@ -143,7 +161,7 @@ export class OpenAIChatProvider {
   private async sendMessageWithFallback(
     userInput: string,
     systemPrompt?: string,
-    previousMessages: Message[] = []
+    previousMessages: Message[] = [],
   ): Promise<string> {
     const fallbackProvider = new OpenAIChatProvider(this.config.apiKey, {
       model: OpenAIChatProvider.FALLBACK_MODEL,
@@ -151,7 +169,11 @@ export class OpenAIChatProvider {
       temperature: this.config.temperature,
     });
 
-    return fallbackProvider.sendMessage(userInput, systemPrompt, previousMessages);
+    return fallbackProvider.sendMessage(
+      userInput,
+      systemPrompt,
+      previousMessages,
+    );
   }
 
   /**
@@ -175,7 +197,7 @@ export class OpenAIChatProvider {
     try {
       const response = await fetch(`${OpenAIChatProvider.BASE_URL}/models`, {
         headers: {
-          "Authorization": `Bearer ${this.config.apiKey}`,
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
       });
       return response.ok;
