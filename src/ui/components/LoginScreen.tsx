@@ -8,7 +8,7 @@ function LoginScreen({ onLogin }: LoginScreenProps) {
       className="w-full flex flex-col items-center"
       style={{ WebkitAppRegion: "no-drag" }}
     >
-      <h2 className="text-2xl font-semibold mb-4">Welcome Back</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-white">Welcome Back</h2>
 
       <input
         type="text"

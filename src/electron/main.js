@@ -8,7 +8,7 @@ app.on("ready", () => {
   const { width } = display.workAreaSize;
 
   mainWindow = new BrowserWindow({
-    width: 400,
+    width: 480,
     height: 100, // initial guess
     x: Math.floor((width - 400) / 2),
     y: 0,

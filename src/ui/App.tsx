@@ -3,9 +3,11 @@ const { ipcRenderer } = window.require("electron");
 
 import LoginScreen from "./components/LoginScreen";
 import OverlayBar from "./components/OverlayBar";
+import ChatComponent from "./components/ChatComponent";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -17,24 +19,25 @@ function App() {
       ipcRenderer.send("resize-window", { width, height });
     };
 
-    resizeWindow(); // Initial
-
+    resizeWindow();
     const observer = new ResizeObserver(resizeWindow);
     observer.observe(containerRef.current);
 
     return () => observer.disconnect();
-  }, []);
+  }, [loggedIn, showChat]); // ✅ Recalculate when content changes
 
   return (
     <div
       ref={containerRef}
-      className="bg-black backdrop-blur-md  flex flex-col justify-start items-center p-4  shadow-lg transition-all "
-      style={{ WebkitAppRegion: "drag" }} // ✅ Entire container draggable
+      className="bg-black        transition-all select-none"
+      style={{ WebkitAppRegion: "drag" }}
     >
       {!loggedIn ? (
         <LoginScreen onLogin={() => setLoggedIn(true)} />
+      ) : showChat ? (
+        <ChatComponent onBack={() => setShowChat(false)} />
       ) : (
-        <OverlayBar />
+        <OverlayBar onChatClick={() => setShowChat(true)} />
       )}
     </div>
   );
