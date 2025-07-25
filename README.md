@@ -23,7 +23,7 @@ This application uses browser localStorage to persist user data across sessions.
 - **Key**: `"gemini_api_key"`
 - **Data Type**: String
 - **Purpose**: Stores the user's Google Gemini API key for AI model access
-- **Example**: 
+- **Example**:
   ```javascript
   localStorage.setItem("gemini_api_key", "AIzaSyD1234567890abcdefghijklmnopqrstuvwxyz");
   ```
@@ -76,7 +76,7 @@ This application uses browser localStorage to persist user data across sessions.
       systemPrompt: "You are a helpful assistant that assists users with general tasks. Be friendly, professional, and provide clear, actionable responses."
     },
     {
-      id: "1703123456790", 
+      id: "1703123456790",
       name: "Code Assistant",
       context: "Specialized in helping with programming tasks and code review.",
       systemPrompt: "You are an expert code assistant specializing in software development. Provide accurate, efficient, and well-documented code solutions."
@@ -85,7 +85,7 @@ This application uses browser localStorage to persist user data across sessions.
   localStorage.setItem("agents", JSON.stringify(agents));
   ```
 - **Default Value**: If no agents exist, a default "Helper Bot" agent is created
-- **Usage Locations**: 
+- **Usage Locations**:
   - `SettingsComponent.tsx` - For creating, reading, updating, and deleting agents
   - `ChatComponent.tsx` - For loading available agents in chat interface
   - `AgentsSection.tsx` - For displaying and managing agents
@@ -107,7 +107,7 @@ This application uses browser localStorage to persist user data across sessions.
 - **Usage Locations**:
   - `ModelSelector.tsx` - For storing selected provider when user selects a model
   - `ChatComponent.tsx` - For loading the last selected provider on startup
-- **Behavior**: 
+- **Behavior**:
   - Automatically set when user selects any AI model from dropdown
   - Used to determine default model on app restart
   - Falls back to first available provider if stored provider has no API key
@@ -126,7 +126,7 @@ The application includes AI-powered system prompt generation for agents using th
    - Authentication: Bearer token
 
 2. **Google Gemini Pro**
-   - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent`
+   - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`
    - Authentication: API key parameter
 
 3. **Anthropic Claude**
@@ -184,7 +184,7 @@ const selectedProvider = localStorage.getItem("selected_provider") || "";
 ```javascript
 // API Keys
 localStorage.setItem("gemini_api_key", geminiKey);
-localStorage.setItem("openai_api_key", openaiKey);  
+localStorage.setItem("openai_api_key", openaiKey);
 localStorage.setItem("claude_api_key", claudeKey);
 
 // Agents
@@ -200,7 +200,7 @@ localStorage.setItem("selected_provider", "openai");
 if (storedAgents.length === 0) {
   const dummyAgent = {
     id: Date.now().toString(),
-    name: "Helper Bot", 
+    name: "Helper Bot",
     context: "Assists users with general tasks."
   };
   localStorage.setItem("agents", JSON.stringify([dummyAgent]));
@@ -246,30 +246,33 @@ The application supports two distinct chat modes:
 
 #### Provider-Specific Implementation
 
-**OpenAI GPT-4**:
+**OpenAI GPT-4 Turbo** (`gpt-4-turbo-preview`):
 ```javascript
-// Message format for OpenAI
+// Message format for OpenAI with system prompt separation
 messages: [
   { role: "system", content: systemPrompt }, // Only if agent selected
   { role: "user", content: "Previous user message" },
   { role: "assistant", content: "Previous AI response" },
   { role: "user", content: "Current user message" }
 ]
+// Uses: max_tokens: 1000, temperature: 0.7
 ```
 
-**Google Gemini Pro**:
+**Google Gemini 1.5 Pro** (`gemini-1.5-pro`):
 ```javascript
-// Gemini uses single prompt with conversation context
+// Gemini uses consolidated prompt with conversation context
 fullPrompt = `
-System: ${systemPrompt}
+System Instructions: ${systemPrompt}
 
+Conversation History:
 User: Previous message
 Assistant: Previous response
-User: Current message
-`
+
+User: Current message`
+// Uses: maxOutputTokens: 1000, temperature: 0.7, topK: 40, topP: 0.95
 ```
 
-**Anthropic Claude**:
+**Anthropic Claude 3.5 Sonnet** (`claude-3-5-sonnet-20241022`):
 ```javascript
 // Claude separates system prompt from messages
 {
@@ -280,6 +283,7 @@ User: Current message
     { role: "user", content: "Current user message" }
   ]
 }
+// Uses: max_tokens: 1000, temperature: 0.7
 ```
 
 ### Conversation Context Management
@@ -289,13 +293,18 @@ User: Current message
 - **Context Building**: Different strategies per provider while maintaining consistency
 - **Error Handling**: Graceful fallbacks for API failures
 
-### AI Service Architecture
+### Refactored Chat Architecture
 
-#### Provider Classes
-- `OpenAIProvider` - Handles OpenAI API communication
-- `GeminiProvider` - Handles Google Gemini API communication  
-- `ClaudeProvider` - Handles Anthropic Claude API communication
-- `AIService` - Main service that routes to appropriate provider
+#### Chat Provider Classes
+- `OpenAIChatProvider` - Handles OpenAI GPT-4 Turbo API communication
+- `GeminiChatProvider` - Handles Google Gemini 1.5 Pro API communication
+- `ClaudeChatProvider` - Handles Anthropic Claude 3.5 Sonnet API communication
+- `ChatService` - Main service that routes to appropriate provider
+
+#### Model Versions Used
+- **OpenAI**: `gpt-4-turbo-preview` (with fallback to `gpt-4`)
+- **Gemini**: `gemini-1.5-pro` (with fallback to `gemini-pro`)
+- **Claude**: `claude-3-5-sonnet-20241022` (with fallback to `claude-3-sonnet-20240229`)
 
 #### Error Handling
 - Connection testing for each provider

@@ -15,10 +15,10 @@ interface ModelSelectorProps {
 }
 
 const models: Model[] = [
-  { id: "openai-gpt4", name: "OpenAI GPT-4", provider: "openai" },
-  { id: "openai-gpt35", name: "OpenAI GPT-3.5", provider: "openai" },
-  { id: "gemini", name: "gemini-2.5-flash-live", provider: "gemini" },
-  { id: "claude-3", name: "Claude 3", provider: "claude" },
+  { id: "openai-gpt4", name: "OpenAI GPT-4 Turbo", provider: "openai" },
+  { id: "openai-gpt35", name: "OpenAI GPT-3.5 Turbo", provider: "openai" },
+  { id: "gemini", name: "Google Gemini 2.0 Flash", provider: "gemini" },
+  { id: "claude-3", name: "Anthropic Claude 3.5 Sonnet", provider: "claude" },
 ];
 
 export default function ModelSelector({

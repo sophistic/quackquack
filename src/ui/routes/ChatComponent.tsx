@@ -3,7 +3,7 @@ import type { ChatComponentProps, Message, Agent } from "../components/types";
 import ChatHeader from "../components/ChatHeader";
 import MessagesList from "../components/MessagesList";
 import ChatInput from "../components/ChatInput";
-import { AIService } from "../services/aiService";
+import { ChatService } from "../services/chatProviders/chatService";
 
 interface Model {
   id: string;
@@ -12,10 +12,10 @@ interface Model {
 }
 
 const models: Model[] = [
-  { id: "openai-gpt4", name: "OpenAI GPT-4", provider: "openai" },
+  { id: "openai-gpt4", name: "OpenAI GPT-4 Turbo", provider: "openai" },
   { id: "openai-gpt35", name: "OpenAI GPT-3.5", provider: "openai" },
-  { id: "gemini", name: "gemini-2.5-flash-live", provider: "gemini" },
-  { id: "claude-3", name: "Claude 3", provider: "claude" },
+  { id: "gemini", name: "Google Gemini 2.0 Flash", provider: "gemini" },
+  { id: "claude-3", name: "Anthropic Claude 3.5 Sonnet", provider: "claude" },
 ];
 
 export default function ChatComponent({ onBack }: ChatComponentProps) {
@@ -139,8 +139,7 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content:
-            "❌ No API keys configured. Please add at least one API key in Settings to start chatting.",
+          content: "❌ " + ChatService.getMissingProviderMessage(),
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -152,7 +151,6 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
       const currentModel = models.find((m) => m.id === selectedModel);
 
       if (!currentModel || !availableProviders.has(currentModel.provider)) {
-        // Model not available, show error message
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
@@ -164,14 +162,14 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         return;
       }
 
-      // Get AI service instance
-      const aiService = await AIService.createInstance();
-      if (!aiService) {
+      // Create chat service instance
+      const chatService = await ChatService.createFromSelectedProvider();
+      if (!chatService) {
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content:
-            "❌ Unable to initialize AI service. Please check your API keys in Settings.",
+            "❌ Unable to initialize chat service. Please check your API keys in Settings.",
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -179,8 +177,8 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         return;
       }
 
-      // Prepare conversation context
-      let conversationContext = "";
+      // Prepare system prompt and agent info
+      let systemPrompt: string | undefined;
       let agentName = "";
 
       // If an agent is selected, use its system prompt
@@ -189,36 +187,35 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         if (agent) {
           agentName = agent.name;
           if (agent.systemPrompt) {
-            conversationContext = agent.systemPrompt;
+            systemPrompt = agent.systemPrompt;
           } else if (agent.context) {
-            conversationContext = `You are ${agent.name}. ${agent.context}`;
+            systemPrompt = `You are ${agent.name}. ${agent.context}`;
           }
         }
       }
 
-      // Add status indicator to show which mode is being used
-      const statusMessage: Message = {
+      // Add thinking indicator
+      const thinkingMessage: Message = {
         id: (Date.now() + 0.5).toString(),
         role: "assistant",
         content: selectedAgent
           ? `🤖 ${agentName} is thinking...`
-          : `🧠 ${aiService.getProviderDisplayName()} is thinking...`,
+          : `🧠 ${chatService.getProviderDisplayName()} is thinking...`,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, statusMessage]);
+      setMessages((prev) => [...prev, thinkingMessage]);
 
       // Send message to AI provider
-      const response = await sendMessageToProvider(
-        aiService,
+      const response = await chatService.sendMessage(
         userMessage.content,
-        conversationContext,
+        systemPrompt,
         messages,
       );
 
-      // Remove the thinking message and add the actual response
+      // Remove thinking message and add actual response
       setMessages((prev) => {
         const withoutThinking = prev.filter(
-          (msg) => msg.id !== statusMessage.id,
+          (msg) => msg.id !== thinkingMessage.id,
         );
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -228,6 +225,7 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
         };
         return [...withoutThinking, aiMessage];
       });
+
       setIsLoading(false);
     } catch (error) {
       console.error("Error in handleSend:", error);
@@ -240,6 +238,7 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
             : "❌ An unexpected error occurred. Please try again.",
         timestamp: new Date(),
       };
+
       // Remove any thinking messages and add error
       setMessages((prev) => {
         const withoutThinking = prev.filter(
@@ -249,217 +248,6 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
       });
       setIsLoading(false);
     }
-  };
-
-  const sendMessageToProvider = async (
-    aiService: AIService,
-    userInput: string,
-    systemPrompt: string,
-    previousMessages: Message[],
-  ): Promise<string> => {
-    const provider = aiService.getProvider();
-
-    try {
-      switch (provider) {
-        case "openai":
-          return await sendToOpenAI(
-            aiService,
-            userInput,
-            systemPrompt,
-            previousMessages,
-          );
-        case "gemini":
-          return await sendToGemini(
-            aiService,
-            userInput,
-            systemPrompt,
-            previousMessages,
-          );
-        case "claude":
-          return await sendToClaude(
-            aiService,
-            userInput,
-            systemPrompt,
-            previousMessages,
-          );
-        default:
-          throw new Error(`Unsupported provider: ${provider}`);
-      }
-    } catch (error) {
-      throw new Error(
-        `Failed to get response from ${provider.toUpperCase()}: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
-    }
-  };
-
-  const sendToOpenAI = async (
-    aiService: AIService,
-    userInput: string,
-    systemPrompt: string,
-    previousMessages: Message[],
-  ): Promise<string> => {
-    const apiKey = localStorage.getItem("openai_api_key");
-    if (!apiKey) throw new Error("OpenAI API key not found");
-
-    const messages: any[] = [];
-
-    // Add system prompt if provided
-    if (systemPrompt) {
-      messages.push({ role: "system", content: systemPrompt });
-    }
-
-    // Add previous conversation context (last 10 messages for context)
-    const recentMessages = previousMessages.slice(-10);
-    recentMessages.forEach((msg) => {
-      messages.push({
-        role: msg.role === "user" ? "user" : "assistant",
-        content: msg.content,
-      });
-    });
-
-    // Add current user message
-    messages.push({ role: "user", content: userInput });
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: messages,
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `OpenAI API error: ${response.status} - ${errorData.error?.message || response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || "No response generated";
-  };
-
-  const sendToGemini = async (
-    aiService: AIService,
-    userInput: string,
-    systemPrompt: string,
-    previousMessages: Message[],
-  ): Promise<string> => {
-    const apiKey = localStorage.getItem("gemini_api_key");
-    if (!apiKey) throw new Error("Gemini API key not found");
-
-    // Build conversation context
-    let fullPrompt = "";
-
-    if (systemPrompt) {
-      fullPrompt += `System: ${systemPrompt}\n\n`;
-    }
-
-    // Add recent conversation history
-    const recentMessages = previousMessages.slice(-10);
-    recentMessages.forEach((msg) => {
-      fullPrompt += `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}\n`;
-    });
-
-    fullPrompt += `User: ${userInput}`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: fullPrompt }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1000,
-          },
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Gemini API error: ${response.status} - ${errorData.error?.message || response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-    return (
-      data.candidates[0]?.content?.parts[0]?.text || "No response generated"
-    );
-  };
-
-  const sendToClaude = async (
-    aiService: AIService,
-    userInput: string,
-    systemPrompt: string,
-    previousMessages: Message[],
-  ): Promise<string> => {
-    const apiKey = localStorage.getItem("claude_api_key");
-    if (!apiKey) throw new Error("Claude API key not found");
-
-    const messages: any[] = [];
-
-    // Add previous conversation context (last 10 messages)
-    const recentMessages = previousMessages.slice(-10);
-    recentMessages.forEach((msg) => {
-      messages.push({
-        role: msg.role === "user" ? "user" : "assistant",
-        content: msg.content,
-      });
-    });
-
-    // Add current user message
-    messages.push({ role: "user", content: userInput });
-
-    const requestBody: any = {
-      model: "claude-3-sonnet-20240229",
-      max_tokens: 1000,
-      temperature: 0.7,
-      messages: messages,
-    };
-
-    // Add system prompt if provided
-    if (systemPrompt) {
-      requestBody.system = systemPrompt;
-    }
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Claude API error: ${response.status} - ${errorData.error?.message || response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-    return data.content[0]?.text || "No response generated";
   };
 
   const clearConversation = () => {
@@ -493,8 +281,8 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
 
   return (
     <div
-      className="no-drag backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
-      // style={{ WebkitAppRegion: "no-drag" }}
+      className="backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
+      style={{ WebkitAppRegion: "no-drag" }}
     >
       {/* Header */}
       <ChatHeader
