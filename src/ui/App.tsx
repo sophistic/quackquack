@@ -13,7 +13,8 @@ function App() {
 
     const resizeWindow = () => {
       const height = containerRef.current!.scrollHeight;
-      ipcRenderer.send("resize-window", { width: 400, height });
+      const width = containerRef.current!.scrollWidth;
+      ipcRenderer.send("resize-window", { width, height });
     };
 
     resizeWindow(); // Initial
@@ -27,7 +28,7 @@ function App() {
   return (
     <div
       ref={containerRef}
-      className="bg-black/60 backdrop-blur-md text-white flex flex-col justify-start items-center p-4 rounded-xl shadow-lg transition-all"
+      className="bg-black backdrop-blur-md  flex flex-col justify-start items-center p-4  shadow-lg transition-all "
       style={{ WebkitAppRegion: "drag" }} // ✅ Entire container draggable
     >
       {!loggedIn ? (
