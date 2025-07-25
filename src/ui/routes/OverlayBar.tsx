@@ -4,8 +4,10 @@ import { MessageCircle, Settings } from "lucide-react";
 
 export default function OverlayBar({
   onChatClick,
+  onSettingsClick,
 }: {
   onChatClick: () => void;
+  onSettingsClick: () => void;
 }) {
   return (
     <div
@@ -33,6 +35,7 @@ export default function OverlayBar({
         <div
           className="cursor-pointer group relative overflow-hidden backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-400/30 hover:border-blue-400/50 p-3 rounded-xl text-white font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
           style={{ WebkitAppRegion: "no-drag" }}
+          onClick={onSettingsClick}
         >
           <Settings size={18} />
         </div>

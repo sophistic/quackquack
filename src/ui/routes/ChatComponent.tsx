@@ -1,8 +1,6 @@
-"use client";
-
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Send, Trash2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Send, Trash2, ChevronDown, Bot } from "lucide-react";
 
 interface Message {
   id: string;
@@ -15,12 +13,23 @@ interface ChatComponentProps {
   onBack: () => void;
 }
 
+interface Agent {
+  id: string;
+  name: string;
+  context: string;
+}
+
 export default function ChatComponent({ onBack }: ChatComponentProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [selectedModel, setSelectedModel] = useState("openai-gpt4");
   const [isLoading, setIsLoading] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [showAgentsDropdown, setShowAgentsDropdown] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const models = [
@@ -30,13 +39,19 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
     { id: "claude-3", name: "Claude 3", provider: "claude" },
   ];
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Load agents from localStorage
+    const storedAgents = JSON.parse(localStorage.getItem("agents") || "[]");
+    setAgents(storedAgents);
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -52,14 +67,22 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call)
+    // Simulated AI response (replace later with actual API call)
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: `This is a simulated response from ${
           models.find((m) => m.id === selectedModel)?.name
-        }. In a real implementation, this would connect to the actual AI API using the stored API keys.`,
+        } ${
+          selectedAgent
+            ? `with the help of agent "${
+                agents.find((a) => a.id === selectedAgent)?.name
+              }" (context: ${
+                agents.find((a) => a.id === selectedAgent)?.context
+              })`
+            : ""
+        }.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
@@ -80,11 +103,11 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
 
   return (
     <div
-      className="backdrop-blur-xl bg-black/70  rounded-xl shadow-xl w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
+      className="backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
       style={{ WebkitAppRegion: "no-drag" }}
     >
       {/* Header */}
-      <div className="flex  items-center  justify-between px-4 py-3 border-b border-white/20">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/20">
         <div className="flex items-center gap-3 ">
           <button
             onClick={onBack}
@@ -136,6 +159,60 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
             )}
           </div>
 
+          {/* ✅ Agents Selector */}
+          <div className="relative">
+            <button
+              style={{ WebkitAppRegion: "no-drag" }}
+              onClick={() => setShowAgentsDropdown(!showAgentsDropdown)}
+              className="backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg text-white text-xs transition-all duration-200 flex items-center gap-1"
+            >
+              <Bot size={14} />
+              <span className="truncate max-w-[80px]">
+                {selectedAgent
+                  ? agents.find((a) => a.id === selectedAgent)?.name
+                  : "No Agent"}
+              </span>
+              <ChevronDown size={14} />
+            </button>
+
+            {showAgentsDropdown && (
+              <div
+                className="absolute top-full right-0 mt-1 backdrop-blur-xl bg-black/80 border border-white/20 rounded-lg shadow-xl z-10 min-w-40"
+                style={{ WebkitAppRegion: "no-drag" }}
+              >
+                {agents.length === 0 ? (
+                  <div className="px-3 py-2 text-white/50 text-xs">
+                    No agents available
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setSelectedAgent(null);
+                        setShowAgentsDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-white/60 hover:bg-white/10 text-xs"
+                    >
+                      No Agent
+                    </button>
+                    {agents.map((agent) => (
+                      <button
+                        key={agent.id}
+                        onClick={() => {
+                          setSelectedAgent(agent.id);
+                          setShowAgentsDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-white text-xs hover:bg-white/10 first:rounded-t-lg last:rounded-b-lg transition-all duration-150"
+                      >
+                        {agent.name}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Clear Conversation */}
           <button
             onClick={clearConversation}
@@ -149,8 +226,7 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
 
       {/* Messages */}
       <div
-        className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide
-        "
+        className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
         style={{ WebkitAppRegion: "no-drag" }}
       >
         {messages.length === 0 ? (
