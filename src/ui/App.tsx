@@ -30,8 +30,7 @@ function App() {
   return (
     <div
       ref={containerRef}
-      className="bg-black        transition-all select-none"
-      style={{ WebkitAppRegion: "drag" }}
+      className="bg-black  drag      transition-all select-none"
     >
       {!loggedIn ? (
         <LoginScreen onLogin={() => setLoggedIn(true)} />

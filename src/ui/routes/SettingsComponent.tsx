@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import type {
@@ -79,15 +77,11 @@ export default function SettingsComponent({ onBack }: SettingsComponentProps) {
   };
 
   return (
-    <div
-      className="backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[480px] max-h-[520px] flex flex-col p-6"
-      style={{ WebkitAppRegion: "drag" }}
-    >
+    <div className="drag backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[480px] max-h-[520px] flex flex-col p-6">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-5">
+      <div className="no-drag flex items-center gap-3 mb-5">
         <button
           onClick={onBack}
-          style={{ WebkitAppRegion: "no-drag" }}
           className="backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 p-2 rounded-lg text-white transition-all duration-200 hover:scale-105"
         >
           <ArrowLeft size={18} />

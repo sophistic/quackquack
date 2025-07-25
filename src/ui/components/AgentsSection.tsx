@@ -14,7 +14,7 @@ export default function AgentsSection({
   onDeleteAgent,
 }: AgentsSectionProps) {
   return (
-    <div className="space-y-3" style={{ WebkitAppRegion: "no-drag" }}>
+    <div className="space-y-3 no-drag">
       <div className="flex items-center justify-between">
         <h3 className="text-white/80 text-sm font-semibold flex items-center gap-1">
           <Bot size={14} /> Agents

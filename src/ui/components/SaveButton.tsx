@@ -7,7 +7,7 @@ interface SaveButtonProps {
 
 export default function SaveButton({ saveStatus, onSave }: SaveButtonProps) {
   return (
-    <div className="mt-5" style={{ WebkitAppRegion: "no-drag" }}>
+    <div className="mt-5 no-drag">
       <button
         onClick={onSave}
         disabled={saveStatus === "saving"}

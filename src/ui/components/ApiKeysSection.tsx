@@ -18,7 +18,7 @@ export default function ApiKeysSection({
   onClaudeKeyChange,
 }: ApiKeysSectionProps) {
   return (
-    <div className="space-y-4" style={{ WebkitAppRegion: "no-drag" }}>
+    <div className="space-y-4 no-drag">
       <h3 className="text-white/80 text-sm font-semibold">API Keys</h3>
 
       {/* Gemini */}

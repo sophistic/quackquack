@@ -9,3 +9,14 @@ export interface Agent {
 }
 
 export type SaveStatus = "idle" | "saving" | "saved";
+
+export interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatComponentProps {
+  onBack: () => void;
+}
