@@ -84,7 +84,7 @@ export default function SettingsComponent({ onBack }: SettingsComponentProps) {
   };
 
   return (
-    <div className="drag backdrop-blur-xl bg-black/70 rounded-xl shadow-xl w-[480px] max-h-[520px] flex flex-col p-6">
+    <div className="drag backdrop-blur-xl bg-black/80 rounded-xl shadow-xl w-[480px] max-h-[520px] flex flex-col p-6">
       {/* Header */}
       <div className="no-drag flex items-center gap-3 mb-5">
         <button

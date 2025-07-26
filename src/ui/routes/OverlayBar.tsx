@@ -1,5 +1,3 @@
-"use client";
-
 import { MessageCircle, Settings } from "lucide-react";
 
 export default function OverlayBar({
@@ -10,7 +8,7 @@ export default function OverlayBar({
   onSettingsClick: () => void;
 }) {
   return (
-    <div className=" drag flex items-center justify-around gap-4 p-4">
+    <div className=" bg-black/80 rounded-4xl drag flex items-center justify-around gap-4 p-4">
       {/* Left side title */}
 
       <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">

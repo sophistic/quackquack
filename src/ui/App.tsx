@@ -30,7 +30,7 @@ function App() {
   return (
     <div
       ref={containerRef}
-      className="bg-black  drag      transition-all select-none"
+      className=" bg-transparent drag      transition-all select-none"
     >
       {!loggedIn ? (
         <LoginScreen onLogin={() => setLoggedIn(true)} />
