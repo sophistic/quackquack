@@ -1,4 +1,5 @@
 import type { SaveStatus } from "./types";
+import { Button } from "@/components/ui/button";
 
 interface SaveButtonProps {
   saveStatus: SaveStatus;
@@ -8,17 +9,17 @@ interface SaveButtonProps {
 export default function SaveButton({ saveStatus, onSave }: SaveButtonProps) {
   return (
     <div className="mt-5 no-drag">
-      <button
+      <Button
         onClick={onSave}
         disabled={saveStatus === "saving"}
-        className="w-full backdrop-blur-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-400/30 px-4 py-3 rounded-lg text-white text-sm font-medium transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-primary-foreground border border-border px-4 py-3 rounded-md text-sm font-medium font-inter transition-all duration-200 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saveStatus === "saving"
           ? "Saving..."
           : saveStatus === "saved"
             ? "Saved!"
             : "Save"}
-      </button>
+      </Button>
     </div>
   );
 }

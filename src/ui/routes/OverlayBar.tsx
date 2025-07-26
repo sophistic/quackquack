@@ -1,35 +1,61 @@
-import { MessageCircle, Settings } from "lucide-react";
 
-export default function OverlayBar({
-  onChatClick,
-  onSettingsClick,
-}: {
+import { MessageCircle, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface OverlayBarProps {
   onChatClick: () => void;
   onSettingsClick: () => void;
-}) {
+}
+export default function OverlayBar({ onChatClick, onSettingsClick }: OverlayBarProps) {
   return (
-    <div className=" bg-black/80 rounded-4xl drag flex items-center justify-around gap-4 p-4">
-      {/* Left side title */}
-
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-        Quackkk
-      </h1>
-      <div className="flex gap-4">
-        <div
-          onClick={onChatClick}
-          className="cursor-pointer group relative overflow-hidden backdrop-blur-sm bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-400/30 hover:border-green-400/50 p-2 rounded-xl text-white font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25"
+    <div className="bg-card border-2 border-primary/20 rounded-md drag flex items-center justify-between gap-4 p-3 font-inter shadow-lg">
+      {/* Left side title with fade animation */}
+      <AnimatePresence>
+        <motion.span
+          className="text-xl font-light text-foreground tracking-tighter select-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: [0.785, 0.135, 0.15, 0.86], type: "tween" }}
         >
-          <div className="no-drag flex items-center gap-2">
-            <MessageCircle size={18} />
-            <span>Chat</span>
-          </div>
-        </div>
-        <div
-          className="no-drag cursor-pointer group relative overflow-hidden backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-400/30 hover:border-blue-400/50 p-3 rounded-xl text-white font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
-          onClick={onSettingsClick}
-        >
-          <Settings size={18} />
-        </div>
+          Quackkk
+        </motion.span>
+      </AnimatePresence>
+      <div className="flex gap-2">
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.785, 0.135, 0.15, 0.86], type: "tween" }}
+          >
+            <Button
+              variant="ghost"
+              onClick={onChatClick}
+              className="no-drag flex !bg-primary/10 items-center gap-2 rounded-md px-3 py-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <MessageCircle size={18} />
+              <span>Chat</span>
+            </Button>
+          </motion.div>
+        </AnimatePresence>
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.785, 0.135, 0.15, 0.86], type: "tween" }}
+          >
+            <Button
+              variant="ghost"
+              onClick={onSettingsClick}
+              className="no-drag flex !bg-primary/10 items-center justify-center rounded-md p-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <Settings size={18} />
+            </Button>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ app.on("ready", () => {
     y: 0,
     frame: false,
     transparent: true,
+    autoHideMenuBar: true,
     alwaysOnTop: true,
     resizable: false,
     webPreferences: {

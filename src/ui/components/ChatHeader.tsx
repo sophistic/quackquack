@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { Agent } from "./types";
 import ModelSelector from "./ModelSelector";
 import AgentSelector from "./AgentSelector";
+import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
   onBack: () => void;
@@ -40,18 +41,18 @@ export default function ChatHeader({
   }, [selectedAgent]);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-white/20">
-      <div className="flex items-center gap-3 ">
-        <button
+    <div className="flex items-center justify-between px-4 py-3 border-b border-border font-inter">
+      <div className="flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
           onClick={onBack}
-          className="no-drag backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 p-2 rounded-lg text-white transition-all duration-200 hover:scale-105"
+          className="no-drag p-2 rounded-md border border-border text-foreground hover:bg-accent hover:text-accent-foreground"
         >
           <ArrowLeft size={18} />
-        </button>
+        </Button>
         <div className="drag">
-          <h2 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Quack Chat
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground tracking-tight">Quack Chat</h2>
           <div
             className={`transition-all duration-300 ${
               agentTransition ? "scale-95 opacity-60" : "scale-100 opacity-100"
@@ -60,11 +61,10 @@ export default function ChatHeader({
             {selectedAgent ? (
               <p className="text-xs text-green-400 mt-0.5">
                 Agent: {agents.find((a) => a.id === selectedAgent)?.name}
-                {agents.find((a) => a.id === selectedAgent)?.systemPrompt &&
-                  " ✨"}
+                {agents.find((a) => a.id === selectedAgent)?.systemPrompt && " ✨"}
               </p>
             ) : (
-              <p className="text-xs text-white/60 mt-0.5">Direct AI Chat</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Direct AI Chat</p>
             )}
           </div>
         </div>
@@ -89,12 +89,14 @@ export default function ChatHeader({
         />
 
         {/* Clear Conversation */}
-        <button
+        <Button
+          type="button"
+          variant="destructive"
           onClick={onClearConversation}
-          className="no-drag backdrop-blur-sm bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 p-2 rounded-lg text-white transition-all duration-200 hover:scale-105"
+          className="no-drag p-2 rounded-md border border-border "
         >
           <Trash2 size={16} />
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import type React from "react";
 import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ChatInputProps {
   input: string;
@@ -69,7 +71,7 @@ export default function ChatInput({
       </div>
 
       <div className="flex gap-2">
-        <textarea
+        <Textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyPress={handleKeyPress}
@@ -79,16 +81,18 @@ export default function ChatInput({
               : "Type your message..."
           }
           rows={1}
-          className="flex-1 backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-purple-400/50 focus:bg-white/15 transition-all duration-200 resize-none"
+          className="flex-1 bg-input border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:bg-card transition-all duration-200 resize-none font-inter"
           style={{ minHeight: "40px", maxHeight: "100px" }}
         />
-        <button
+        <Button
+          type="button"
           onClick={onSend}
           disabled={!input.trim() || isLoading}
-          className="backdrop-blur-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-400/30 p-2 rounded-lg text-white transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          size="icon"
+          className="no-drag rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send size={18} />
-        </button>
+        </Button>
       </div>
     </div>
   );

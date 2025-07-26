@@ -1,28 +1,22 @@
 import type { Message } from "./types";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface MessageItemProps {
   message: Message;
 }
 
 export default function MessageItem({ message }: MessageItemProps) {
+  const isUser = message.role === "user";
   return (
-    <div
-      className={`flex ${
-        message.role === "user" ? "justify-end" : "justify-start"
-      }`}
-    >
-      <div
-        className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
-          message.role === "user"
-            ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/20 text-white"
-            : "bg-white/10 border border-white/10 text-white"
-        }`}
-      >
-        <p className="whitespace-pre-wrap">{message.content}</p>
-        <p className="text-[10px] text-white/40 mt-1">
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"} font-inter`}>
+      <Card className={`max-w-[80%] px-3 py-2 rounded-md border border-border bg-card ${isUser ? "ml-auto" : "mr-auto"}`}>
+        <p className="whitespace-pre-wrap text-foreground text-sm">{message.content}</p>
+        <Separator className="my-1" />
+        <p className="text-[10px] text-muted-foreground mt-1 text-right">
           {message.timestamp.toLocaleTimeString()}
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

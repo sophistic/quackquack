@@ -1,10 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-const { ipcRenderer } = window.require("electron");
+// Fix for Electron ipcRenderer import
+let ipcRenderer: any = undefined;
+if (typeof window !== "undefined" && (window as any).electron?.ipcRenderer) {
+  ipcRenderer = (window as any).electron.ipcRenderer;
+} else if (typeof window !== "undefined" && (window as any).ipcRenderer) {
+  ipcRenderer = (window as any).ipcRenderer;
+} else {
+  try {
+    // @ts-ignore
+    ipcRenderer = require("electron").ipcRenderer;
+  } catch (e) {
+    ipcRenderer = undefined;
+  }
+}
 
 import LoginScreen from "./routes/LoginScreen";
 import OverlayBar from "./routes/OverlayBar";
 import ChatComponent from "./routes/ChatComponent";
+import { HeroUIProvider } from "@heroui/react";
 import SettingsComponent from "./routes/SettingsComponent";
+import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -17,7 +32,9 @@ function App() {
     const resizeWindow = () => {
       const height = containerRef.current!.scrollHeight;
       const width = containerRef.current!.scrollWidth;
-      ipcRenderer.send("resize-window", { width, height });
+      if (ipcRenderer) {
+        ipcRenderer.send("resize-window", { width, height });
+      }
     };
 
     resizeWindow();
@@ -28,9 +45,10 @@ function App() {
   }, [loggedIn, showChat]); // ✅ Recalculate when content changes
 
   return (
-    <div
+    
+      <div
       ref={containerRef}
-      className=" bg-transparent drag      transition-all select-none"
+      className=" bg-black rounded-lg overflow-hidden  drag transition-all  select-none dark text-foreground"
     >
       {!loggedIn ? (
         <LoginScreen onLogin={() => setLoggedIn(true)} />
@@ -45,6 +63,7 @@ function App() {
         />
       )}
     </div>
+    
   );
 }
 

@@ -84,18 +84,16 @@ export default function SettingsComponent({ onBack }: SettingsComponentProps) {
   };
 
   return (
-    <div className="drag backdrop-blur-xl bg-black/80 rounded-xl shadow-xl w-[480px] max-h-[520px] flex flex-col p-6">
+    <div className="drag bg-card border-2 border-primary/20 rounded-md font-inter shadow-lg  max-h-[520px] flex flex-col p-6">
       {/* Header */}
       <div className="no-drag flex items-center gap-3 mb-5">
         <button
           onClick={onBack}
-          className="backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 p-2 rounded-lg text-white transition-all duration-200 hover:scale-105"
+          className="bg-accent/30 hover:bg-accent/50 border border-border p-2 rounded-md text-foreground transition-all duration-200 hover:scale-105"
         >
           <ArrowLeft size={18} />
         </button>
-        <h2 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-          Settings
-        </h2>
+        <h2 className="text-lg font-semibold text-foreground tracking-tight">Settings</h2>
       </div>
 
       {/* Scrollable Content */}

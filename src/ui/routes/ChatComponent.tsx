@@ -310,8 +310,8 @@ export default function ChatComponent({ onBack }: ChatComponentProps) {
 
   return (
     <div
-      className="backdrop-blur-xl bg-black/90 rounded-xl shadow-xl w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
-      style={{ WebkitAppRegion: "no-drag" }}
+      className="bg-card border-2 border-primary/20 rounded-md font-inter drag shadow-lg w-[580px] max-h-[500px] flex flex-col scrollbar-hide"
+      style={{ WebkitAppRegion: 'no-drag' }}
     >
       {/* Header */}
       <ChatHeader
